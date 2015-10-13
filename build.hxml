@@ -1,0 +1,7 @@
+-main GB
+
+-cp src
+
+-resource rom.gb@rom
+
+-js bin/app.js
