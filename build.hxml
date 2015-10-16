@@ -2,6 +2,6 @@
 
 -cp src
 
--resource rom.gb@rom
+-resource game.gb@rom
 
 -js bin/app.js
