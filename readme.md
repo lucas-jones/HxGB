@@ -17,3 +17,15 @@ http://gbdev.gg8.se/wiki/articles/Gameboy_Bootstrap_ROM
 http://www.zophar.net/documents/gb.html
 
 http://gbdev.gg8.se/wiki/articles/ASM_Init
+
+https://realboyemulator.wordpress.com/2013/01/03/a-look-at-the-game-boy-bootstrap-let-the-fun-begin/
+
+https://realboyemulator.wordpress.com/2013/01/08/emulating-the-core-1/
+
+Testing:
+
+http://wiki.nesdev.com/w/index.php/Emulator_tests
+
+http://gamedev.stackexchange.com/questions/9802/platform-for-ds-gameboy-dev-managed-memory-tools-and-unit-testing
+
+http://stackoverflow.com/questions/6953763/gameboy-emulator-testing-strategies
