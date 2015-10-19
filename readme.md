@@ -29,3 +29,5 @@ http://wiki.nesdev.com/w/index.php/Emulator_tests
 http://gamedev.stackexchange.com/questions/9802/platform-for-ds-gameboy-dev-managed-memory-tools-and-unit-testing
 
 http://stackoverflow.com/questions/6953763/gameboy-emulator-testing-strategies
+
+http://www.multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/
