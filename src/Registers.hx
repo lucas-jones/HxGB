@@ -45,7 +45,7 @@ class Registers
 	{
 		return [
 			"SP: " + sp.hex() + "\tHL: " + hl.hex() + "(H: " + h.hex() + ", " + l.hex() + ")",
-			"A: " + a.hex()
+			"A: " + a.hex() + " F:" + f.hex()
 			
 		].join("\n");
 	}

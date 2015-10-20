@@ -36,7 +36,7 @@ class Instruction
         0x1D => new Instruction(1, 1, "DEC E"),
         0x1E => new Instruction(2, 2, "LD E, n"),
         0x1F => new Instruction(1, 1, "RRA"),
-        0x20 => new Instruction(0, 0, "JR NZ, nn"), // <-- Mine
+        0x20 => new Instruction(2, 0, "JR NZ, nn"), // <-- Mine
         0x21 => new Instruction(3, 3, "LD HL, nn"),
         0x22 => new Instruction(1, 2, "LD (HLI), A"),
         0x23 => new Instruction(1, 2, "INC HL"),
@@ -206,6 +206,7 @@ class Instruction
         0xC8 => new Instruction(0, 0, "RET Z"),
         0xC9 => new Instruction(0, 4, "RET"),
         0xCA => new Instruction(0, 0, "JP Z, nn"),
+        0xCB => new Instruction(2, 0, "BIT 7, H"),
         0xCC => new Instruction(0, 0, "CALL Z, nn"),
         0xCD => new Instruction(0, 6, "CALL, nn"),
         0xCE => new Instruction(2, 2, "ADC n"),
