@@ -1,33 +1,44 @@
-https://github.com/Two9A/jsGB/blob/master/js/z80.js
+HxGB
+====
+Baby's first emulator
 
-http://imrannazar.com/GameBoy-Emulation-in-JavaScript
+## Documentation ##
+ - http://imrannazar.com/GameBoy-Emulation-in-JavaScript
 
-https://github.com/NewbiZ/gbemu/blob/master/scripts/opcodes.json
+ - https://realboyemulator.wordpress.com/2013/01/02/the-nintendo-game-boy-part-2/
 
-http://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html
+ - http://marc.rawer.de/Gameboy/Docs/GBCPUman.pdf
 
-Goldmine: https://github.com/Prehistoricman/GBEmulatorStuff
+## Boot ROM ##
+ - https://realboyemulator.wordpress.com/2013/01/08/emulating-the-core-1/
+ 
+ - http://gbdev.gg8.se/wiki/articles/Gameboy_Bootstrap_ROM
+ 
 
-Gameboy Manual: http://marc.rawer.de/Gameboy/Docs/GBCPUman.pdf
+## Emulator Implementation ##
+ - https://github.com/Two9A/jsGB/blob/master/js/z80.js
 
-https://realboyemulator.wordpress.com/2013/01/02/the-nintendo-game-boy-part-2/
+ - https://github.com/retrio/gb/tree/master/retrio/emu/gb
 
-http://gbdev.gg8.se/wiki/articles/Gameboy_Bootstrap_ROM
+## Opcodes
+ - https://github.com/NewbiZ/gbemu/blob/master/scripts/opcodes.json
 
-http://www.zophar.net/documents/gb.html
+ - http://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html
 
-http://gbdev.gg8.se/wiki/articles/ASM_Init
 
-https://realboyemulator.wordpress.com/2013/01/03/a-look-at-the-game-boy-bootstrap-let-the-fun-begin/
+## Testing ##
+ - http://wiki.nesdev.com/w/index.php/Emulator_tests   
 
-https://realboyemulator.wordpress.com/2013/01/08/emulating-the-core-1/
+ -  http://gamedev.stackexchange.com/questions/9802/platform-for-ds-gameboy-dev-managed-memory-tools-and-unit-testing   
+   
+ - http://stackoverflow.com/questions/6953763/gameboy-emulator-testing-strategies
 
-Testing:
+ - http://blargg.8bitalley.com/parodius/gb-tests/
 
-http://wiki.nesdev.com/w/index.php/Emulator_tests
+## Other ##
 
-http://gamedev.stackexchange.com/questions/9802/platform-for-ds-gameboy-dev-managed-memory-tools-and-unit-testing
+ - https://github.com/Prehistoricman/GBEmulatorStuff
 
-http://stackoverflow.com/questions/6953763/gameboy-emulator-testing-strategies
+ - http://www.zophar.net/documents/gb.html
 
-http://www.multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/
+ - http://www.multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/
