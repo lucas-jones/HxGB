@@ -10,8 +10,10 @@ class Registers
 	public static var H:String = "h";
 	public static var L:String = "l";
 	public static var A:String = "a";
+	public static var B:String = "b";
+	public static var C:String = "c";
 
-	public static var ALL:Array<String> = [ F, SP, PC, H, L, A ];
+	public static var ALL:Array<String> = [ F, SP, PC, H, L, A, B, C ];
 
 	public var sp(get, set):Int;
 	public var pc(get, set):Int;
@@ -19,6 +21,8 @@ class Registers
 	public var hl(get, set):Int;
 
 	public var a(get, set):Int;
+	public var b(get, set):Int;
+	public var c(get, set):Int;
 
 	public var f(get, set):Int;
 	public var h(get, set):Int;
@@ -45,7 +49,8 @@ class Registers
 	{
 		return [
 			"SP: " + sp.hex() + "\tHL: " + hl.hex() + "(H: " + h.hex() + ", " + l.hex() + ")",
-			"A: " + a.hex() + " F:" + f.hex()
+			"A: " + a.hex() + " F:" + f.hex(),
+			"B: " + b.hex() + " C:" + c.hex()
 			
 		].join("\n");
 	}
@@ -94,6 +99,30 @@ class Registers
 	function set_a(value:Int):Int
 	{
 		values[A] = value;
+
+		return value;
+	}
+
+	function get_b():Int 
+	{
+		return values[B];
+	}
+
+	function set_b(value:Int):Int
+	{
+		values[B] = value;
+
+		return value;
+	}
+
+	function get_c():Int 
+	{
+		return values[C];
+	}
+
+	function set_c(value:Int):Int
+	{
+		values[C] = value;
 
 		return value;
 	}

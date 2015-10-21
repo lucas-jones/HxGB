@@ -47,14 +47,25 @@ class CPU
 		// trace("-------------------------------------------------------------------------");
 
 		// Break JUMP
-		if(registers.pc > 24) {
+		if(registers.pc == 0x0014) {
+			trace("-------------------------------------------------------------------------");
+			var dataBytes = [ for(x in 1 ... instruction.size) memory.readByte(registers.pc + x) ].map(Tools.hex.bind(_, 2)).join(" ");
+			trace('-- [${address}] ${instruction.tag} (Opcode: ${opcodeHex} Size: ${instruction.size}) ${dataBytes}');
+			trace("-------------------------------------------------------------------------");
+
+			trace(registers.toString());
+			trace(opcode.hex());
 			throw "Fak";
 		};
 
 		registers.pc++;
 
 		//LD SP
+		
 		if(opcode == 0x31) LD("sp");
+		if(opcode == 0x0E) LD("c");
+		if(opcode == 0x3E) LD("a");
+
 		if(opcode == 0xAF) XOR("a")();
 		if(opcode == 0x21) LD("hl");
 		if(opcode == 0x32)  //LDHLDA
@@ -85,10 +96,10 @@ class CPU
 				// trace("f:" + registers.f.hex());
 				registers.f &= 0x1F;
 				registers.f |= 0x20;
-				registers.f = (registers.f & 0x00 == 1) ? 0 : 0x80;
-
-				// trace("f:" + registers.f.hex());
-				//throw "";
+				//registers.f = (registers.h & 0x80 == 0) ? 0 : 0x20;
+				registers.f = (registers.h & 0x80 == 0) ? 0 : registers.f;
+				//trace("f:" + (registers.f).hex() + " = " + (registers.h & 0x80).hex() + " " + (registers.h & 0x80 > 0));
+				// throw "";
 			}
 			else
 			{
@@ -125,17 +136,19 @@ class CPU
 			// }
 
 			// ISsue is this should be true...
-			if(registers.f != 0x20) {
+			if(registers.f != 0x00) {
 				
-				trace("GOTO Address: " + (registers.pc + i).hex());
+				//trace("GOTO Address: " + (registers.pc + i).hex());
 				registers.pc += i;
 				//throw("return!");
 			}
 			else
 			{
 				trace("CARRY ON");
-				registers.pc++;
-				throw "shit";
+				trace("CURRENT Address: " + (registers.pc).hex());
+
+
+				//throw "shit";
 			}
 		}
 
@@ -144,17 +157,27 @@ class CPU
 		//if()size > 0
 		registers.pc += instruction.size - 1;
 		//registers.pc &= 65535;
-
+		//trace("CURRENT Address: " + (registers.pc).hex());
 
 		// trace(registers.toString());
-		// memory.print(/*0x8000*/ 0x9FE0, 0x9FFF + 1);
+		//memory.print(0x8000, 0x8000 + 0x1000 /*0x9FFF + 1*/);
 		
 	}
 
 	// must be 16 bit register
 	function LD(register:String)
+	{
+		var value = register.length == 2 ? memory.readWord(registers.pc) : memory.readByte(registers.pc);
+
+		var valueHex = "0x" + StringTools.hex(value, register.length == 1 ? 2 : 4);
+		trace(register + " = " + valueHex);
+
+		Reflect.setProperty(registers, register, value);
+	}
+
+	function LD_byte(register:String)
 	{    
-		var value = memory.readWord(registers.pc);
+		var value = memory.readByte(registers.pc);
 
 		var valueHex = "0x" + StringTools.hex(value, 4);
 		//trace(register + " = " + valueHex);
