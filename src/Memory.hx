@@ -29,8 +29,8 @@ class Memory
 
 	public function writeByte(address:Int, value:Int):Void
 	{
-		trace("[" + address.hex() + "] = " + value.hex());
-		// 
+		trace("[WRITE] " + address.hex() + " = " + value.hex());
+		//
 		memory.set(address, value);
 	}
 
@@ -47,12 +47,12 @@ class Memory
 		{
 			if((x - start) % 60 == 0)
 			{
-				result += (x - start == 0 ? "" : "\n") + "[0x00" + x.hex() + "] ";	
-				result += readByte(x).hex().substring(2, 4) + " ";				
+				result += (x - start == 0 ? "" : "\n") + "[0x00" + x.hex() + "] ";
+				result += readByte(x).hex().substring(2, 4) + " ";
 			}
 			else
 			{
-				result += readByte(x).hex().substring(2, 4) + " ";			
+				result += readByte(x).hex().substring(2, 4) + " ";
 			}
 		}
 

@@ -6,6 +6,7 @@ class CPU
 {
 	var memory:Memory;
 	var registers:Registers;
+	var processor:Map<Int, Void->Void>;
 
 	public function new(memory:Memory)
 	{
@@ -15,6 +16,24 @@ class CPU
 		for(x in 0x9FE0 ... 0x9FFF + 1) memory.writeByte(x, 0x11);
 
 		trace(registers.toString());
+
+		processor = [
+			0x31 => LD.bind(Registers.SP),
+			0x0E => LD.bind(Registers.C),
+			0x3E => LD_byte.bind(Registers.A),
+			0x21 => LD.bind(Registers.HL),
+
+			0xE2 => LDIOCA,
+
+			0xAF => XOR(Registers.A),
+
+			0x32 => LDHLDA,
+			0xCB => BIT7H,
+			0x20 => JRNZn,
+			//0x3E => LDN.bind(Registers.A),
+
+			0x0C => INC.bind(Registers.C)
+		];
 	}
 
 	public function reset()
@@ -22,161 +41,141 @@ class CPU
 		registers.reset();
 	}
 
-	public function cycle()
+	public function dump()
 	{
+		var opcode = memory.readByte(registers.pc);
+		var instruction = Instruction.list[opcode];
 
 		var address = "0x" + StringTools.hex(registers.pc, 2);
-		var opcode = memory.readByte(registers.pc);
 		var opcodeHex = "0x" + StringTools.hex(opcode, 2);
+
+		trace("-------------------------------------------------------------------------");
+		var dataBytes = [ for(x in 1 ... instruction.size) memory.readByte(registers.pc + x) ].map(Tools.hex.bind(_, 2)).join(" ");
+		trace('-- [${address}] ${instruction.tag} (Opcode: ${opcodeHex} Size: ${instruction.size}) ${dataBytes}');
+		trace("-------------------------------------------------------------------------");
+
+		trace(registers.toString());
+
+		throw "Dump";
+	}
+
+	public function cycle()
+	{
+		var opcode = memory.readByte(registers.pc);
+
 
 		if(!Instruction.list.exists(opcode))
 		{
-			trace('Unknown Opcode ${opcodeHex} @ ${registers.pc}');
+			// trace('Unknown Opcode ${opcodeHex} @ ${registers.pc}');
 			registers.pc++;
 
-			
-
-			return;
+			throw "";
 		}
 
-		var instruction = Instruction.list[opcode];
-		//trace(address);
-		// trace("-------------------------------------------------------------------------");
-		// var dataBytes = [ for(x in 1 ... instruction.size) memory.readByte(registers.pc + x) ].map(Tools.hex.bind(_, 2)).join(" ");
-		// trace('-- [${address}] ${instruction.tag} (Opcode: ${opcodeHex} Size: ${instruction.size}) ${dataBytes}');
-		// trace("-------------------------------------------------------------------------");
-
 		// Break JUMP
-		if(registers.pc == 0x0014) {
-			trace("-------------------------------------------------------------------------");
-			var dataBytes = [ for(x in 1 ... instruction.size) memory.readByte(registers.pc + x) ].map(Tools.hex.bind(_, 2)).join(" ");
-			trace('-- [${address}] ${instruction.tag} (Opcode: ${opcodeHex} Size: ${instruction.size}) ${dataBytes}');
-			trace("-------------------------------------------------------------------------");
-
-			trace(registers.toString());
-			trace(opcode.hex());
-			throw "Fak";
-		};
+		if(registers.pc == 0x001C) dump();
 
 		registers.pc++;
 
-		//LD SP
-		
-		if(opcode == 0x31) LD("sp");
-		if(opcode == 0x0E) LD("c");
-		if(opcode == 0x3E) LD("a");
-
-		if(opcode == 0xAF) XOR("a")();
-		if(opcode == 0x21) LD("hl");
-		if(opcode == 0x32)  //LDHLDA
+		if(processor.exists(opcode))
 		{
-			//MMU.wb((Z80._r.h<<8) + Z80._r.l, Z80._r.a);
-			memory.writeByte((registers.h << 8) + registers.l, registers.a);
-
-			// Z80._r.l = (Z80._r.l-1) & 255;
-			registers.l = registers.l - 1 & 255;
-			
-			//if(Z80._r.l==255) Z80._r.h = (Z80._r.h-1) & 255;
-			if(registers.l == 255) registers.h = (registers.h - 1) & 255;
+			processor.get(opcode)();
+		}
+		else
+		{
+			registers.pc--;
+			trace("[WARNING] Missing Opcode: " + opcode.hex());
+			dump();
 		}
 
-
-		if(opcode == 0xCB) // BIT 7,H
-		{
-			var i = memory.readByte(registers.pc);
-
-			// registers.pc++;
-
-			
-
-			// trace("Bit: " + i.hex());
-
-			if(i == 0x7C)
-			{
-				// trace("f:" + registers.f.hex());
-				registers.f &= 0x1F;
-				registers.f |= 0x20;
-				//registers.f = (registers.h & 0x80 == 0) ? 0 : 0x20;
-				registers.f = (registers.h & 0x80 == 0) ? 0 : registers.f;
-				//trace("f:" + (registers.f).hex() + " = " + (registers.h & 0x80).hex() + " " + (registers.h & 0x80 > 0));
-				// throw "";
-			}
-			else
-			{
-				throw "UNknown";
-			}
-			//Z80._r.f &= 0x1F;
-			// Z80._r.f |= 0x20;
-			// Z80._r.f = (Z80._r.h & 0x80) ? 0 : 0x80; 
-			// Z80._r.m=2;
-			
-			
-			//registers.f = (registers.h & 0x80 == 1) ? 0 : 0x80;
-
-			//trace(">>>>>>>");
-
-			//registers.pc += 1;
-		}
-
-		if(opcode == 0x20) // JRNZn
-		{
-			var i = memory.readByte(registers.pc);
-
-			if(i > 127) i =- ((~i + 1) & 255);
-
-			//Z80._r.pc++;
-			//
-
-			//Z80._r.m=2; 
-
-			// if((Z80._r.f&0x80) == 0x00)
-			// {
-			// 	Z80._r.pc+=i;
-			// 	Z80._r.m++;
-			// }
-
-			// ISsue is this should be true...
-			if(registers.f != 0x00) {
-				
-				//trace("GOTO Address: " + (registers.pc + i).hex());
-				registers.pc += i;
-				//throw("return!");
-			}
-			else
-			{
-				trace("CARRY ON");
-				trace("CURRENT Address: " + (registers.pc).hex());
-
-
-				//throw "shit";
-			}
-		}
-
-
-
-		//if()size > 0
+		var instruction = Instruction.list[opcode];
 		registers.pc += instruction.size - 1;
-		//registers.pc &= 65535;
-		//trace("CURRENT Address: " + (registers.pc).hex());
-
-		// trace(registers.toString());
-		//memory.print(0x8000, 0x8000 + 0x1000 /*0x9FFF + 1*/);
-		
+		registers.pc &= 65535;
 	}
 
-	// must be 16 bit register
+	function INC(register:String)
+	{
+		trace(registers.values.get(register));
+		var value = (registers.values.get(register) + 1) & 0xff;
+
+		//registers.values.set(Registers.HF, (value & 0xf) == 0);
+
+		registers.values.set(register, value & 0xff);
+		trace(registers.values.get(register));
+	}
+
+	function LDN(register:String)
+	{
+		registers.values.set(register, memory.readByte(registers.pc + 1));
+	}
+
+	function LDIOCA()
+	{
+		memory.writeByte(0xFF00 | registers.c, registers.a);
+		// MMU.wb(+Z80._r.c,Z80._r.a); Z80._r.m=2;
+	}
+
+	function JRNZn()
+	{
+		var i = memory.readByte(registers.pc);
+
+		if(i > 127) i =- ((~i + 1) & 255);
+
+		// ISsue is this should be true...
+		if(registers.f != 0x00) {
+
+			//trace("GOTO Address: " + (registers.pc + i).hex());
+			registers.pc += i;
+		}
+		else
+		{
+			trace("[BREAK] " + (registers.pc).hex());
+		}
+	}
+
+	function BIT7H()
+	{
+		var i = memory.readByte(registers.pc);
+
+		if(i == 0x7C)
+		{
+			registers.f &= 0x1F;
+			registers.f |= 0x20;
+			registers.f = (registers.h & 0x80 == 0) ? 0 : registers.f;
+		}
+		else
+		{
+			throw "UNknown";
+		}
+	}
+
+	function LDHLDA()
+	{
+		memory.writeByte((registers.h << 8) + registers.l, registers.a);
+
+		registers.l = registers.l - 1 & 255;
+
+		if(registers.l == 255) registers.h = (registers.h - 1) & 255;
+	}
+
+	// Must be 16 bit register
 	function LD(register:String)
 	{
+		//trace(register);
+		//if(register.length != 2) throw "Wrong Size Dude";
+
 		var value = register.length == 2 ? memory.readWord(registers.pc) : memory.readByte(registers.pc);
 
 		var valueHex = "0x" + StringTools.hex(value, register.length == 1 ? 2 : 4);
-		trace(register + " = " + valueHex);
+		trace("[LD] " + register + " = " + valueHex);
 
 		Reflect.setProperty(registers, register, value);
 	}
 
 	function LD_byte(register:String)
-	{    
+	{
+		//if(register.length != 1) throw "Wrong Size Dude";
+
 		var value = memory.readByte(registers.pc);
 
 		var valueHex = "0x" + StringTools.hex(value, 4);

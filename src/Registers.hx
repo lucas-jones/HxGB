@@ -13,12 +13,16 @@ class Registers
 	public static var B:String = "b";
 	public static var C:String = "c";
 
-	public static var ALL:Array<String> = [ F, SP, PC, H, L, A, B, C ];
+	public static var HL:String = H + L;
+	public static var HF:String = H + F;
+
+	public static var ALL:Array<String> = [ F, SP, PC, H, L, A, B, C, HF ];
 
 	public var sp(get, set):Int;
 	public var pc(get, set):Int;
-	
+
 	public var hl(get, set):Int;
+	public var hf(get, set):Int;
 
 	public var a(get, set):Int;
 	public var b(get, set):Int;
@@ -51,11 +55,11 @@ class Registers
 			"SP: " + sp.hex() + "\tHL: " + hl.hex() + "(H: " + h.hex() + ", " + l.hex() + ")",
 			"A: " + a.hex() + " F:" + f.hex(),
 			"B: " + b.hex() + " C:" + c.hex()
-			
+
 		].join("\n");
 	}
 
-	function get_f():Int 
+	function get_f():Int
 	{
 		return values[F];
 	}
@@ -67,7 +71,7 @@ class Registers
 		return value;
 	}
 
-	function get_h():Int 
+	function get_h():Int
 	{
 		return values[H];
 	}
@@ -79,7 +83,7 @@ class Registers
 		return value;
 	}
 
-	function get_l():Int 
+	function get_l():Int
 	{
 		return values[L];
 	}
@@ -91,7 +95,7 @@ class Registers
 		return value;
 	}
 
-	function get_a():Int 
+	function get_a():Int
 	{
 		return values[A];
 	}
@@ -103,7 +107,7 @@ class Registers
 		return value;
 	}
 
-	function get_b():Int 
+	function get_b():Int
 	{
 		return values[B];
 	}
@@ -115,7 +119,7 @@ class Registers
 		return value;
 	}
 
-	function get_c():Int 
+	function get_c():Int
 	{
 		return values[C];
 	}
@@ -127,7 +131,7 @@ class Registers
 		return value;
 	}
 
-	function get_hl():Int 
+	function get_hl():Int
 	{
 		return (values[H] << 8) + values[L];
 	}
@@ -135,6 +139,19 @@ class Registers
 	function set_hl(value:Int):Int
 	{
 		values[L] = (value & 255);
+		values[H] = (value >> 8);
+
+		return value;
+	}
+
+	function get_hf():Int
+	{
+		return (values[H] << 8) + values[F];
+	}
+
+	function set_hf(value:Int):Int
+	{
+		values[F] = (value & 255);
 		values[H] = (value >> 8);
 
 		return value;
