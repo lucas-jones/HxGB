@@ -42,3 +42,9 @@ Baby's first emulator
  - http://www.zophar.net/documents/gb.html
 
  - http://www.multigesture.net/articles/how-to-write-an-emulator-chip-8-interpreter/
+
+ - https://www.reddit.com/comments/3jy7p9/writing_a_game_boy_emulator/
+
+ - https://www.reddit.com/r/compsci/comments/1vg3zg/good_tutorial_on_writing_a_simple_computer/
+
+ - https://www.youtube.com/watch?v=RZUDEaLa5Nw
