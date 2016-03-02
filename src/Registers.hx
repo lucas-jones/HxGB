@@ -4,33 +4,35 @@ using Tools;
 
 class Registers
 {
-	public static var F:String = "f";
 	public static var SP:String = "sp";
 	public static var PC:String = "pc";
-	public static var H:String = "h";
-	public static var L:String = "l";
 	public static var A:String = "a";
 	public static var B:String = "b";
 	public static var C:String = "c";
-
+	public static var D:String = "d";
+	public static var E:String = "e";
+	public static var F:String = "f";
+	public static var H:String = "h";
+	public static var L:String = "l";
 	public static var HL:String = H + L;
 	public static var HF:String = H + F;
 
-	public static var ALL:Array<String> = [ F, SP, PC, H, L, A, B, C, HF ];
+	public static var ALL:Array<String> = [ SP, PC, A, B, C, D, E, F, H, L,  HL, HF ];
 
 	public var sp(get, set):Int;
 	public var pc(get, set):Int;
 
-	public var hl(get, set):Int;
-	public var hf(get, set):Int;
-
 	public var a(get, set):Int;
 	public var b(get, set):Int;
 	public var c(get, set):Int;
-
+	public var d(get, set):Int;
+	public var e(get, set):Int;
 	public var f(get, set):Int;
 	public var h(get, set):Int;
 	public var l(get, set):Int;
+
+	public var hl(get, set):Int;
+	public var hf(get, set):Int;
 
 	public var values:Map<String, Int>;
 
@@ -52,11 +54,36 @@ class Registers
 	public function toString():String
 	{
 		return [
-			"SP: " + sp.hex() + "\tHL: " + hl.hex() + "(H: " + h.hex() + ", " + l.hex() + ")",
-			"A: " + a.hex() + " F:" + f.hex(),
-			"B: " + b.hex() + " C:" + c.hex()
-
+			"SP  " + sp.hex() + "\t"	+"PC  " + pc.hex(4),
+			"A   " + a.hex() + "\t"+ "B   " + b.hex(),
+			"C   " + c.hex() + "\t"+ "D   " + d.hex(),
+			"E   " + e.hex() + "\t"+ "F   " + f.hex(),
+			"H   " + h.hex() + "\t"+ "L   " + l.hex(),
 		].join("\n");
+	}
+
+	function get_d():Int
+	{
+		return values[D];
+	}
+
+	function set_d(value:Int):Int
+	{
+		values[D] = value;
+
+		return value;
+	}
+
+	function get_e():Int
+	{
+		return values[E];
+	}
+
+	function set_e(value:Int):Int
+	{
+		values[E] = value;
+
+		return value;
 	}
 
 	function get_f():Int

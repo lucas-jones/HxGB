@@ -15,24 +15,22 @@ class CPU
 
 		for(x in 0x9FE0 ... 0x9FFF + 1) memory.writeByte(x, 0x11);
 
-		trace(registers.toString());
 
 		processor = [
 			0x31 => LD.bind(Registers.SP),
 			0x0E => LD.bind(Registers.C),
-			0x3E => LD_byte.bind(Registers.A),
+			0x3E => LD.bind(Registers.A),
 			0x21 => LD.bind(Registers.HL),
 
-			0xE2 => LDIOCA,
+			0xE2 => LDIOCA,	// write(0xFF00 | c, a);
+			0x32 => LDHLDA,	// write(hl--, a);
 
 			0xAF => XOR(Registers.A),
 
-			0x32 => LDHLDA,
-			0xCB => BIT7H,
-			0x20 => JRNZn,
-			//0x3E => LDN.bind(Registers.A),
-
 			0x0C => INC.bind(Registers.C)
+
+			0x20 => JRNZn,
+			0xCB => BIT7H,
 		];
 	}
 
@@ -41,55 +39,29 @@ class CPU
 		registers.reset();
 	}
 
-	public function dump()
-	{
-		var opcode = memory.readByte(registers.pc);
-		var instruction = Instruction.list[opcode];
-
-		var address = "0x" + StringTools.hex(registers.pc, 2);
-		var opcodeHex = "0x" + StringTools.hex(opcode, 2);
-
-		trace("-------------------------------------------------------------------------");
-		var dataBytes = [ for(x in 1 ... instruction.size) memory.readByte(registers.pc + x) ].map(Tools.hex.bind(_, 2)).join(" ");
-		trace('-- [${address}] ${instruction.tag} (Opcode: ${opcodeHex} Size: ${instruction.size}) ${dataBytes}');
-		trace("-------------------------------------------------------------------------");
-
-		trace(registers.toString());
-
-		throw "Dump";
-	}
-
 	public function cycle()
 	{
 		var opcode = memory.readByte(registers.pc);
 
-
 		if(!Instruction.list.exists(opcode))
 		{
-			// trace('Unknown Opcode ${opcodeHex} @ ${registers.pc}');
-			registers.pc++;
-
-			throw "";
+			throw 'Unknown Instruction ${opcode.hex()} @ ${registers.pc}';
 		}
-
-		// Break JUMP
-		if(registers.pc == 0x001C) dump();
-
-		registers.pc++;
 
 		if(processor.exists(opcode))
 		{
+			registers.pc++;
+
 			processor.get(opcode)();
 		}
 		else
 		{
-			registers.pc--;
-			trace("[WARNING] Missing Opcode: " + opcode.hex());
 			dump();
+
+			throw "Missing Opcode: " + opcode.hex();
 		}
 
-		var instruction = Instruction.list[opcode];
-		registers.pc += instruction.size - 1;
+		registers.pc += Instruction.list[opcode].size - 1;
 		registers.pc &= 65535;
 	}
 
@@ -158,18 +130,14 @@ class CPU
 		if(registers.l == 255) registers.h = (registers.h - 1) & 255;
 	}
 
-	// Must be 16 bit register
+	// Magic can do 8 & 16 bit
 	function LD(register:String)
 	{
-		//trace(register);
-		//if(register.length != 2) throw "Wrong Size Dude";
-
 		var value = register.length == 2 ? memory.readWord(registers.pc) : memory.readByte(registers.pc);
 
-		var valueHex = "0x" + StringTools.hex(value, register.length == 1 ? 2 : 4);
-		trace("[LD] " + register + " = " + valueHex);
-
 		Reflect.setProperty(registers, register, value);
+
+		trace("[LD] " + register + " = " + "0x" + StringTools.hex(value, register.length == 1 ? 2 : 4));
 	}
 
 	function LD_byte(register:String)
@@ -200,6 +168,42 @@ class CPU
 			registers.f = r;
 			registers.f = registers.f == 1 ? 0 : 0x80;
 		}
+	}
+
+	public function dump()
+	{
+		trace("_______________________________________________________________________________________");
+		trace("---------------------------------------------------------------------------------------");
+
+		trace('');
+		instruction();
+		trace('');
+		stack();
+		trace('');
+	}
+
+	public function instruction()
+	{
+		var opcode = memory.readByte(registers.pc);
+		var instruction = Instruction.list[opcode];
+
+		var address = registers.pc.hex(2);
+		var opcodeHex = opcode.hex(2);
+
+		var dataBytes = [ for(x in 1 ... instruction.size) memory.readByte(registers.pc + x) ].map(Tools.hex.bind(_, 2)).join(" ");
+
+		trace('\n\tInstruction\n\n');
+		trace('\t\tOpcode\t\t${opcodeHex}\t${instruction.tag}');
+		trace('\t\tLocation\t${address}');
+		trace('\t\tSize\t\t${instruction.size}');
+		if(dataBytes.length > 0) trace('\t\tData\t\t${dataBytes}');
+	}
+
+	public function stack()
+	{
+		trace('\n\tRegisters\n\n');
+		trace('\t\t' + registers.toString().split("\n").join("\n\t\t"));
+		trace('');
 	}
 }
 

@@ -29,8 +29,6 @@ class Memory
 
 	public function writeByte(address:Int, value:Int):Void
 	{
-		trace("[WRITE] " + address.hex() + " = " + value.hex());
-		//
 		memory.set(address, value);
 	}
 
