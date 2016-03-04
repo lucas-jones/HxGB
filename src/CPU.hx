@@ -27,10 +27,36 @@ class CPU
 
 			0xAF => XOR(Registers.A),
 
-			0x0C => INC.bind(Registers.C)
+			0x0C => INC.bind(Registers.C),
 
 			0x20 => JRNZn,
 			0xCB => BIT7H,
+
+			0x77 => WRITE.bind(Registers.HL, Registers.A),
+
+			0xE0 => function()
+			{
+				//write(0xff00 | readpc(), a);
+				memory.writeByte(0xff00 | registers.pc, registers.a);
+			},
+
+			0x11 => LD.bind(Registers.DE),
+
+			0x1A => function()
+			{
+				// a = read(de);
+				trace(registers.pc.hex());
+
+				registers.a = memory.readByte(registers.de);
+				// trace("HELLO WORLD");
+			},
+
+			0xCD => CALL,
+
+			0x4F => function()
+			{
+				registers.c = registers.a;
+			}
 		];
 	}
 
@@ -50,7 +76,10 @@ class CPU
 
 		if(processor.exists(opcode))
 		{
+			//trace("-> " + opcode.hex() + " @ " + registers.pc.hex(4));
+
 			registers.pc++;
+
 
 			processor.get(opcode)();
 		}
@@ -63,6 +92,24 @@ class CPU
 
 		registers.pc += Instruction.list[opcode].size - 1;
 		registers.pc &= 65535;
+	}
+
+	function CALL()
+	{
+		var newSP = memory.readWord(registers.pc);
+
+		PUSH_STACK(registers.pc);
+		registers.pc = newSP + 1; // wat
+
+		trace("CALL FUNCTION @ " + registers.pc.hex(4));
+	}
+
+	function PUSH_STACK(value:Int)
+	{
+		memory.writeByte((--registers.sp) & 0xffff, value >> 8);
+		memory.writeByte((--registers.sp) & 0xffff, value & 0xff);
+
+		registers.sp &= 0xffff;
 	}
 
 	function INC(register:String)
@@ -79,6 +126,11 @@ class CPU
 	function LDN(register:String)
 	{
 		registers.values.set(register, memory.readByte(registers.pc + 1));
+	}
+
+	function WRITE(addressReg:String, valueReg:String)
+	{
+		memory.writeByte(registers.values[addressReg], registers.values[valueReg] & 0xff);
 	}
 
 	function LDIOCA()
@@ -109,7 +161,7 @@ class CPU
 	{
 		var i = memory.readByte(registers.pc);
 
-		if(i == 0x7C)
+		if(i == 0x7C) // 0x4f: // BIT 1,A
 		{
 			registers.f &= 0x1F;
 			registers.f |= 0x20;
@@ -117,7 +169,13 @@ class CPU
 		}
 		else
 		{
-			throw "UNknown";
+			dump();
+
+			registers.pc--;
+
+			throw "Unknown BIT " + i.hex();
+
+
 		}
 	}
 
@@ -206,4 +264,3 @@ class CPU
 		trace('');
 	}
 }
-
