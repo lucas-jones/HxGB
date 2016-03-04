@@ -34,7 +34,7 @@ class Memory
 
 	public function readWord(address:Int):Int
 	{
-		return (memory.get(address + 1) << 8) + memory.get(address);
+		return (memory.get(address + 1) << 8) | memory.get(address);
 	}
 
 	public function print(start:Int, end:Int)

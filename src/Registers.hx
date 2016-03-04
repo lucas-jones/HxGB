@@ -16,8 +16,9 @@ class Registers
 	public static var L:String = "l";
 	public static var HL:String = H + L;
 	public static var HF:String = H + F;
+	public static var DE:String = D + E;
 
-	public static var ALL:Array<String> = [ SP, PC, A, B, C, D, E, F, H, L,  HL, HF ];
+	public static var ALL:Array<String> = [ SP, PC, A, B, C, D, E, F, H, L,  HL, HF, DE ];
 
 	public var sp(get, set):Int;
 	public var pc(get, set):Int;
@@ -33,6 +34,7 @@ class Registers
 
 	public var hl(get, set):Int;
 	public var hf(get, set):Int;
+	public var de(get, set):Int;
 
 	public var values:Map<String, Int>;
 
@@ -160,26 +162,39 @@ class Registers
 
 	function get_hl():Int
 	{
-		return (values[H] << 8) + values[L];
+		return (values[H] << 8) | values[L];
 	}
 
 	function set_hl(value:Int):Int
 	{
-		values[L] = (value & 255);
-		values[H] = (value >> 8);
+		values[H] = (value & 0xff00) >> 8;
+		values[L] = value & 0xff;
 
 		return value;
 	}
 
 	function get_hf():Int
 	{
-		return (values[H] << 8) + values[F];
+		return (values[H] << 8) | values[F];
 	}
 
 	function set_hf(value:Int):Int
 	{
-		values[F] = (value & 255);
-		values[H] = (value >> 8);
+		values[H] = (value & 0xff00) >> 8;
+		values[F] = value & 0xff;
+
+		return value;
+	}
+
+	function get_de():Int
+	{
+		return (values[D] << 8) | values[E];
+	}
+
+	function set_de(value:Int):Int
+	{
+		values[D] = (value & 0xff00) >> 8;
+		values[E] = value & 0xff;
 
 		return value;
 	}
