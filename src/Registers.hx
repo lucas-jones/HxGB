@@ -2,6 +2,19 @@ package ;
 
 using Tools;
 
+class Flags
+{
+	public var carry:Bool;
+	public var half:Bool;
+	public var zero:Bool;
+	public var addsub:Bool;
+
+	public function new()
+	{
+
+	}
+}
+
 class Registers
 {
 	public static var SP:String = "sp";
@@ -17,8 +30,10 @@ class Registers
 	public static var HL:String = H + L;
 	public static var HF:String = H + F;
 	public static var DE:String = D + E;
+	public static var BC:String = B + C;
+	public static var CF:String = C + F;
 
-	public static var ALL:Array<String> = [ SP, PC, A, B, C, D, E, F, H, L,  HL, HF, DE ];
+	public static var ALL:Array<String> = [ SP, PC, A, B, C, D, E, F, H, L,  HL, HF, DE, BC, CF ];
 
 	public var sp(get, set):Int;
 	public var pc(get, set):Int;
@@ -35,11 +50,17 @@ class Registers
 	public var hl(get, set):Int;
 	public var hf(get, set):Int;
 	public var de(get, set):Int;
+	public var bc(get, set):Int;
+	public var cf(get, set):Int;
+
+	public var flags:Flags;
 
 	public var values:Map<String, Int>;
 
 	public function new()
 	{
+		flags = new Flags();
+
 		values = new Map();
 
 		reset();
@@ -195,6 +216,32 @@ class Registers
 	{
 		values[D] = (value & 0xff00) >> 8;
 		values[E] = value & 0xff;
+
+		return value;
+	}
+
+	function get_bc():Int
+	{
+		return (values[B] << 8) | values[C];
+	}
+
+	function set_bc(value:Int):Int
+	{
+		values[B] = (value & 0xff00) >> 8;
+		values[C] = value & 0xff;
+
+		return value;
+	}
+
+	function get_cf():Int
+	{
+		return (values[C] << 8) | values[F];
+	}
+
+	function set_cf(value:Int):Int
+	{
+		values[C] = (value & 0xff00) >> 8;
+		values[F] = value & 0xff;
 
 		return value;
 	}

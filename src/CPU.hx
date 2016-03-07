@@ -15,12 +15,13 @@ class CPU
 
 		for(x in 0x9FE0 ... 0x9FFF + 1) memory.writeByte(x, 0x11);
 
-
 		processor = [
 			0x31 => LD.bind(Registers.SP),
 			0x0E => LD.bind(Registers.C),
 			0x3E => LD.bind(Registers.A),
 			0x21 => LD.bind(Registers.HL),
+			0x06 => LD.bind(Registers.B),
+			0x11 => LD.bind(Registers.DE),
 
 			0xE2 => LDIOCA,	// write(0xFF00 | c, a);
 			0x32 => LDHLDA,	// write(hl--, a);
@@ -40,22 +41,50 @@ class CPU
 				memory.writeByte(0xff00 | registers.pc, registers.a);
 			},
 
-			0x11 => LD.bind(Registers.DE),
-
-			0x1A => function()
-			{
-				// a = read(de);
-				trace(registers.pc.hex());
-
-				registers.a = memory.readByte(registers.de);
-				// trace("HELLO WORLD");
-			},
+			0x1A => LD_MEMORY.bind(Registers.A, Registers.DE),
 
 			0xCD => CALL,
 
 			0x4F => function()
 			{
 				registers.c = registers.a;
+			},
+
+			0xC5 => function()
+			{
+				PUSH_STACK(registers.bc);
+				// registers.sp--;
+				trace("PUSH STACK: " + registers.bc.hex());
+			},
+
+			0x17 => RLA,
+
+			0xC1 => function()
+			{
+				registers.bc = POP_STACK();
+
+				trace("PUSH STACK: " + registers.bc.hex());
+			},
+
+			0x05 => DEC.bind(Registers.B),
+
+			0x22 => function()
+			{
+				memory.writeByte(registers.hl++, registers.a);
+			},
+
+			0x23 => function()
+			{
+				registers.hl++;
+			},
+
+			0xC9 => function()
+			{
+				trace("POPING STACK " + registers.pc);
+
+				registers.pc = POP_STACK();
+
+				trace(registers.pc.hex());
 			}
 		];
 	}
@@ -76,7 +105,7 @@ class CPU
 
 		if(processor.exists(opcode))
 		{
-			//trace("-> " + opcode.hex() + " @ " + registers.pc.hex(4));
+			// trace("-> " + opcode.hex() + " @ " + registers.pc.hex(4));
 
 			registers.pc++;
 
@@ -86,6 +115,8 @@ class CPU
 		else
 		{
 			dump();
+
+			trace((registers.pc - 1).hex());
 
 			throw "Missing Opcode: " + opcode.hex();
 		}
@@ -112,6 +143,12 @@ class CPU
 		registers.sp &= 0xffff;
 	}
 
+	function POP_STACK()
+	{
+		// READ WORD?
+		return (memory.readByte(registers.sp++) | (memory.readByte(registers.sp++) << 8)) & 0xffff;
+	}
+
 	function INC(register:String)
 	{
 		trace(registers.values.get(register));
@@ -121,6 +158,19 @@ class CPU
 
 		registers.values.set(register, value & 0xff);
 		trace(registers.values.get(register));
+	}
+
+	function DEC(register:String)
+	{
+		var val = registers.values.get(register);
+
+		val = (val - 1) & 0xff;
+
+		registers.flags.zero = val == 0;
+		registers.flags.half = val & 0xf == 0xf;
+		registers.flags.addsub = true;
+
+		return val & 0xff;
 	}
 
 	function LDN(register:String)
@@ -167,16 +217,45 @@ class CPU
 			registers.f |= 0x20;
 			registers.f = (registers.h & 0x80 == 0) ? 0 : registers.f;
 		}
+		else if(i == 0x11)
+		{
+			registers.c = rl(registers.c);
+		}
 		else
 		{
 			dump();
 
 			registers.pc--;
 
+			trace("???????");
+
 			throw "Unknown BIT " + i.hex();
 
 
 		}
+	}
+
+	function rl(value:Int)
+	{
+		var newCf = value > 0x7f;
+		value = ((value << 1) & 0xff) | (registers.flags.carry ? 1 : 0);
+		registers.flags.carry = newCf;
+
+		registers.flags.half = registers.flags.addsub = false;
+		registers.flags.zero = value == 0;
+
+		return value & 0xff;
+	}
+
+	function RLA()
+	{
+		var carry = registers.flags.carry ? 1 : 0;
+
+		registers.flags.carry = registers.a > 0x7f;
+
+		registers.a = ((registers.a << 1) & 0xff) | carry;
+
+		registers.flags.zero = registers.flags.addsub = registers.flags.half = false;
 	}
 
 	function LDHLDA()
@@ -213,6 +292,11 @@ class CPU
 	function LD_ab(registerA:String, registerB:String)
 	{
 		registers.values[registerA] = registers.values[registerB];
+	}
+
+	function LD_MEMORY(registerA:String, registerB:String)
+	{
+		registers.values[registerA] =  memory.readByte(registers.values[registerB]);
 	}
 
 	function XOR(register:String)
