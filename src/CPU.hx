@@ -29,11 +29,21 @@ class CPU
 			0xAF => XOR(Registers.A),
 
 			0x0C => INC.bind(Registers.C),
+			0x13 => INC.bind(Registers.D),
+
+			0xEA => function()
+			{
+
+				registers.a = memory.readWord(registers.pc);
+			},
 
 			0x20 => JRNZn,
 			0xCB => BIT7H,
 
-			0x77 => WRITE.bind(Registers.HL, Registers.A),
+			0x77 => function()
+			{
+				memory.writeByte(registers.hl, registers.a);
+			},
 
 			0xE0 => function()
 			{
@@ -54,7 +64,7 @@ class CPU
 			{
 				PUSH_STACK(registers.bc);
 				// registers.sp--;
-				trace("PUSH STACK: " + registers.bc.hex());
+				// trace("PUSH STACK: " + registers.bc.hex(4));
 			},
 
 			0x17 => RLA,
@@ -63,10 +73,27 @@ class CPU
 			{
 				registers.bc = POP_STACK();
 
-				trace("PUSH STACK: " + registers.bc.hex());
+				// trace("POP STACK: " + registers.bc.hex(4));
 			},
 
 			0x05 => DEC.bind(Registers.B),
+			0x3D => DEC.bind(Registers.A),
+
+			// 0x28 => function()
+			// {
+			// 	if(registers.flags.zero)
+			// 	{
+			// 		var inc = memory.readByte(registers.pc);
+			// 		registers.pc += inc;
+
+			// 		trace("not exit?");
+			// 	}
+			// 	else
+			// 	{
+			// 		trace("EXIT?");
+			// 		++registers.pc;
+			// 	}
+			// },
 
 			0x22 => function()
 			{
@@ -87,6 +114,8 @@ class CPU
 				trace(registers.pc.hex());
 			}
 		];
+
+		memory.print(0, 0x100);
 	}
 
 	public function reset()
@@ -96,27 +125,31 @@ class CPU
 
 	public function cycle()
 	{
+		// Breakpoint
+		// if(registers.pc == 0x00A7)
+		// {
+		// 	// memory.print(0, 0x100);
+		// 	dump();
+		// 	throw "";
+		// }
+
 		var opcode = memory.readByte(registers.pc);
 
 		if(!Instruction.list.exists(opcode))
 		{
-			throw 'Unknown Instruction ${opcode.hex()} @ ${registers.pc}';
+			throw "Unknown Instruction " + opcode.hex() + " @ " + registers.pc.hex();
 		}
 
 		if(processor.exists(opcode))
 		{
-			// trace("-> " + opcode.hex() + " @ " + registers.pc.hex(4));
+			trace("-> " + opcode.hex() + " @ " + registers.pc.hex(4) + " " + Instruction.list.get(opcode).tag);
 
 			registers.pc++;
-
-
 			processor.get(opcode)();
 		}
 		else
 		{
 			dump();
-
-			trace((registers.pc - 1).hex());
 
 			throw "Missing Opcode: " + opcode.hex();
 		}
@@ -170,7 +203,7 @@ class CPU
 		registers.flags.half = val & 0xf == 0xf;
 		registers.flags.addsub = true;
 
-		return val & 0xff;
+		registers.values.set(register, val & 0xff);
 	}
 
 	function LDN(register:String)
@@ -191,19 +224,31 @@ class CPU
 
 	function JRNZn()
 	{
-		var i = memory.readByte(registers.pc);
+		// var i = memory.readByte(registers.pc);
 
-		if(i > 127) i =- ((~i + 1) & 255);
+		// if(i > 127) i =- ((~i + 1) & 255);
 
-		// ISsue is this should be true...
-		if(registers.f != 0x00) {
+		// // ISsue is this should be true...
+		// if(registers.f != 0x00) {
 
-			//trace("GOTO Address: " + (registers.pc + i).hex());
-			registers.pc += i;
+		// 	//trace("GOTO Address: " + (registers.pc + i).hex());
+		// 	registers.pc += i;
+		// }
+		// else
+		// {
+		// 	trace("[BREAK] " + (registers.pc).hex());
+		// }
+
+		if(!registers.flags.zero)
+		{
+			var jump = (memory.readByte(registers.pc) ^ 0x80) - 0x80;
+			registers.pc += jump;
+			trace("Jump " + registers.pc.hex() + " - " + registers.b);
 		}
 		else
 		{
-			trace("[BREAK] " + (registers.pc).hex());
+			// ++registers.pc;
+			trace("BREAK");
 		}
 	}
 
@@ -213,9 +258,13 @@ class CPU
 
 		if(i == 0x7C) // 0x4f: // BIT 1,A
 		{
-			registers.f &= 0x1F;
-			registers.f |= 0x20;
-			registers.f = (registers.h & 0x80 == 0) ? 0 : registers.f;
+			registers.flags.half = true;
+			registers.flags.addsub = false;
+			registers.flags.zero = !((registers.h & (1 << 7)) != 0);
+
+			// registers.f &= 0x1F;
+			// registers.f |= (registers.h & 0x80 == 0);
+			//registers.f = (registers.h & 0x80 == 0) ? 0 : registers.f;
 		}
 		else if(i == 0x11)
 		{
@@ -296,7 +345,11 @@ class CPU
 
 	function LD_MEMORY(registerA:String, registerB:String)
 	{
-		registers.values[registerA] =  memory.readByte(registers.values[registerB]);
+
+		registers.values[registerA] =  memory.readByte(registers.de);
+
+		//trace(registerA + " = " + registerB + "  -  " + registers.values[registerA] + " = " + registers.values[registerB].hex(4));
+
 	}
 
 	function XOR(register:String)

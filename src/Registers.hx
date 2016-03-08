@@ -4,10 +4,10 @@ using Tools;
 
 class Flags
 {
-	public var carry:Bool;
-	public var half:Bool;
-	public var zero:Bool;
-	public var addsub:Bool;
+	public var carry:Bool = true;
+	public var half:Bool = true;
+	public var zero:Bool = true;
+	public var addsub:Bool = false;
 
 	public function new()
 	{
@@ -72,16 +72,29 @@ class Registers
 		{
 			values.set(reg, 0);
 		}
+
+		flags.carry = true;
+		flags.half = true;
+		flags.zero = true;
+		flags.addsub = false;
 	}
 
 	public function toString():String
 	{
+		// return [
+		// 	"SP  " + sp.hex() + "\t"	+"PC  " + pc.hex(4),
+		// 	"A   " + a.hex() + "\t"+ "B   " + b.hex(),
+		// 	"C   " + c.hex() + "\t"+ "D   " + d.hex(),
+		// 	"E   " + e.hex() + "\t"+ "F   " + f.hex(),
+		// 	"H   " + h.hex() + "\t"+ "L   " + l.hex(),
+		// 	"DE  " + de.hex(4)
+		// ].join("\n");
+
 		return [
-			"SP  " + sp.hex() + "\t"	+"PC  " + pc.hex(4),
-			"A   " + a.hex() + "\t"+ "B   " + b.hex(),
-			"C   " + c.hex() + "\t"+ "D   " + d.hex(),
-			"E   " + e.hex() + "\t"+ "F   " + f.hex(),
-			"H   " + h.hex() + "\t"+ "L   " + l.hex(),
+			"A   " + a.hex() + "\t"+ "F  " + f.hex(),
+			"B  " + b.hex() + "\t"+ "C   " + c.hex(),
+			"D   " + d.hex() + "\t"+ "E   " + e.hex(),
+			"H   " + h.hex() + "\t"+ "L   " + l.hex()
 		].join("\n");
 	}
 
@@ -111,12 +124,17 @@ class Registers
 
 	function get_f():Int
 	{
-		return values[F];
+		return (flags.zero ? 0x80 : 0x00) | (flags.addsub ? 0x40 : 0) | (flags.half ? 0x20 : 0) | (flags.carry ? 0x10 : 0);
 	}
 
 	function set_f(value:Int):Int
 	{
-		values[F] = value;
+		flags.carry = (value & (1 << 4)) != 0;
+		flags.half = (value & (1 << 5)) != 0;
+		flags.addsub = (value & (1 << 6)) != 0;
+		flags.zero = (value & (1 << 7)) != 0;
+
+		values[F] = value; // ?
 
 		return value;
 	}
