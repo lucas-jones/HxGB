@@ -20,6 +20,8 @@ Baby's first emulator
  - https://github.com/Two9A/jsGB/blob/master/js/z80.js
 
  - https://github.com/retrio/gb/tree/master/retrio/emu/gb
+ 
+ - https://github.com/mattbruv/Gameboy-Emulator
 
 ## Opcodes
  - https://github.com/NewbiZ/gbemu/blob/master/scripts/opcodes.json
